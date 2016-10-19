@@ -18,14 +18,23 @@ class MoviesController < ApplicationController
     when 'release_date'
       ordering,@release_date_header = :release_date, 'hilite'
     end
+    
+    @all_ratings = Movie.all_ratings
+    @selected_ratings = params[:ratings] || session[:ratings] || {}
 
 
     if params[:sort] != session[:sort]
       session[:sort] = sort
-      redirect_to :sort => sort and return
+      redirect_to :sort => sort, :ratings => @selected_ratings and return
+    end
+    
+    if params[:ratings] != session[:ratings] and @selected_ratings != {}
+      session[:sort] = sort
+      session[:ratings] = @selected_ratings
+      redirect_to :sort => sort, :ratings => @selected_ratings and return
     end
 
-    @movies = Movie.order(ordering)
+    @movies = Movie.where(rating: @selected_ratings.keys).order(ordering)
   end
 
   def new
